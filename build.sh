@@ -5,7 +5,7 @@ SRCDIR="ClipBoard"
 BUILDDIR="build"
 APPNAME="ClipBoard"
 APPBUNDLE="$BUILDDIR/$APPNAME.app"
-MODE="${1:-debug}"  # debug 또는 release
+MODE="${1:-debug}"  # debug, release, install
 
 SOURCES=(
     "$SRCDIR/main.swift"
@@ -24,7 +24,7 @@ mkdir -p "$APPBUNDLE/Contents/Resources"
 
 SDK=$(xcrun --show-sdk-path)
 
-if [ "$MODE" = "release" ]; then
+if [ "$MODE" = "release" ] || [ "$MODE" = "install" ]; then
     echo "🔨 릴리즈 빌드 (Universal Binary)..."
 
     # arm64
@@ -112,6 +112,20 @@ if [ "$MODE" = "release" ]; then
     echo "  ✅ DMG 생성 완료: $BUILDDIR/ClipBoard-1.0.0.dmg"
 fi
 
-echo ""
-echo "✅ 빌드 완료: $APPBUNDLE"
-echo "실행: open $APPBUNDLE"
+if [ "$MODE" = "install" ]; then
+    echo ""
+    echo "📦 /Applications에 설치 중..."
+    # 실행 중이면 종료
+    killall ClipBoard 2>/dev/null || true
+    sleep 0.5
+    rm -rf /Applications/ClipBoard.app
+    cp -R "$APPBUNDLE" /Applications/
+    echo "  ✅ 설치 완료: /Applications/ClipBoard.app"
+    echo ""
+    echo "실행 중..."
+    open /Applications/ClipBoard.app
+else
+    echo ""
+    echo "✅ 빌드 완료: $APPBUNDLE"
+    echo "실행: open $APPBUNDLE"
+fi
